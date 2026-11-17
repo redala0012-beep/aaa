@@ -1,0 +1,16 @@
+# 해병대 전사(戰史) 디지털 연표 - 의존성 목록
+#
+# 이 프로젝트는 외부 패키지가 필요 없습니다.
+# 변환기와 결과 사이트는 순수 HTML/CSS/JavaScript로 만들었으며, 브라우저만으로 동작합니다.
+# 따라서 아래 명령을 실행해도 설치되는 패키지가 없습니다.
+#   pip install -r requirements.txt
+#
+# [실행 환경]
+#   - 브라우저: Chrome 또는 Edge 최신판 (DecompressionStream, Canvas, createImageBitmap 사용)
+#
+# [개발용 빌드 스크립트: tools/build.ps1]
+#   - Windows PowerShell 5.1 이상 (Windows 기본 내장)
+#   - .NET Framework 4.x의 System.Drawing, System.IO.Compression (Windows 기본 내장)
+#
+# [사용하지 않은 라이브러리]
+#   - SheetJS(xlsx), JSZip 등은 쓰지 않았습니다. ZIP/XLSX 읽기와 ZIP 쓰기는 converter/converter.js에 직접 구현했습니다.

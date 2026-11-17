@@ -1,0 +1,17 @@
+# 변환기 실행 결과 (site/ 폴더는 샘플 출력으로 저장소에 포함)
+site.zip
+*.zip
+
+# 환경변수·비밀 값 (이 프로젝트는 사용하지 않지만 실수로 올라가지 않도록 차단)
+.env
+.env.*
+*.env
+
+# 배포 도구 로컬 설정
+.vercel
+
+# OS / 편집기
+Thumbs.db
+Desktop.ini
+.DS_Store
+~$*.xlsx

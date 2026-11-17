@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>전사 연표 변환기</title>
+<style>
+:root{--red:#8e2a2f;--red-d:#6f1f24;--gold:#b8963a;--ink:#26262a;--sub:#66666e;--bg:#f7f6f2;--line:#e2ddd2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","맑은 고딕",sans-serif;line-height:1.6}
+header{background:#fff;color:var(--ink);border-bottom:3px solid var(--red);box-shadow:0 1px 0 var(--line)}
+header div{max-width:860px;margin:0 auto;padding:14px 16px;font-weight:800;font-size:1.1rem}
+main{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+.step{background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.07);padding:16px 18px;margin:0 0 16px}
+.step h2{margin:0 0 8px;font-size:1.05rem}
+.step h2 span{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font-size:.85rem;margin-right:8px}
+.drop{border:2px dashed var(--line);border-radius:8px;padding:18px;text-align:center;color:var(--sub);transition:.15s}
+.drop.over{border-color:var(--red);background:#fff4f4}
+.drop .pick{display:inline-block;margin-top:8px}
+.drop label{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 12px;margin:4px;cursor:pointer;color:var(--ink)}
+.drop input{display:none}
+.st{margin-top:10px;font-size:.92rem}
+.ok{color:#0a6b2d;font-weight:700}
+.go{background:var(--red);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-size:1.05rem;font-weight:700;cursor:pointer}
+.go:disabled{background:#bbb;cursor:not-allowed}
+.bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-top:12px;display:none}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
+#msg{margin-top:12px}
+.err{background:#fff4f4;border:1px solid #f3c1c1;border-radius:8px;padding:10px 14px;color:var(--red-d)}
+.err ul{margin:6px 0 0;padding-left:20px}
+.warn{background:#fff8e6;border:1px solid #f1d58a;border-radius:8px;padding:10px 14px;margin-top:10px;color:#6b4a00}
+.done{background:#eefaf1;border:1px solid #b5e2c2;border-radius:8px;padding:12px 14px;color:#0a4d22}
+.done a{display:inline-block;margin-top:8px;background:#0a6b2d;color:#fff;text-decoration:none;border-radius:6px;padding:8px 14px;font-weight:700}
+small.help{display:block;color:var(--sub);margin-top:6px}
+</style>
+</head>
+<body>
+<header><div>해병대 전사(戰史) 디지털 연표 · 변환기</div></header>
+<main>
+  <div class="step">
+    <h2><span>1</span>엑셀 파일 선택</h2>
+    <div class="drop" id="dropX">전사자료.xlsx 파일을 이곳에 끌어다 놓으십시오.
+      <div class="pick"><label>파일 선택<input type="file" id="inX" accept=".xlsx"></label></div>
+      <div class="st" id="stX"></div>
+    </div>
+    <small class="help">[전투], [자료] 시트가 있는 엑셀 파일입니다. [퀴즈], [용어], [근거], [결심], [개정] 시트는 있으면 함께 반영합니다. 빈 양식은 함께 드린 「전사자료_양식.xlsx」를 쓰십시오.</small>
+  </div>
+
+  <div class="step">
+    <h2><span>2</span>이미지 폴더 선택</h2>
+    <div class="drop" id="dropI">images 폴더(또는 사진 파일 여러 개)를 이곳에 끌어다 놓으십시오.
+      <div class="pick"><label>폴더 선택<input type="file" id="inD" webkitdirectory multiple></label><label>파일 선택<input type="file" id="inI" accept="image/*" multiple></label></div>
+      <div class="st" id="stI"></div>
+    </div>
+    <small class="help">원본 스캔 이미지(JPG, PNG)를 넣으십시오. 자동으로 웹용 크기로 줄이고 "해병대 군사연구소" 워터마크를 넣습니다. 원본은 결과물에 포함되지 않습니다.</small>
+  </div>
+
+  <div class="step">
+    <h2><span>3</span>사이트 만들기</h2>
+    <button class="go" id="go" disabled>사이트 만들기</button>
+    <div class="bar" id="bar"><i id="barI"></i></div>
+    <div id="msg"></div>
+    <small class="help">내려받은 site.zip의 압축을 풀고 index.html을 더블클릭하면 인터넷 연결 없이 열립니다.</small>
+  </div>
+</main>
+
+<script src="site-template.js"></script>
+<script src="converter.js"></script>
+<script>
+(function(){
+  var xlsx = null, images = [];
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  function refresh(){
+    $('stX').innerHTML = xlsx ? '<span class="ok">✔ '+esc(xlsx.name)+'</span>' : '';
+    $('stI').innerHTML = images.length ? '<span class="ok">✔ 이미지 '+images.length+'개</span>' : '';
+    $('go').disabled = !(xlsx && images.length);
+  }
+  function setX(files){ for(var f of files){ if(/\.xlsx$/i.test(f.name)){ xlsx=f; break; } } refresh(); }
+  function addI(files){
+    var seen = {}; images.forEach(function(f){ seen[f.name.toLowerCase()]=1; });
+    for(var f of files){ if(/\.(jpe?g|png|gif|bmp|webp|tiff?)$/i.test(f.name) && !seen[f.name.toLowerCase()]){ images.push(f); seen[f.name.toLowerCase()]=1; } }
+    refresh();
+  }
+  async function walk(entry, out){
+    if(entry.isFile){ out.push(await new Promise(function(r,j){ entry.file(r,j); })); return; }
+    if(entry.isDirectory){
+      var rd = entry.createReader(), batch;
+      do { batch = await new Promise(function(r,j){ rd.readEntries(r,j); }); for(var e of batch) await walk(e,out); } while(batch.length);
+    }
+  }
+  async function dropped(e){
+    var out = [], items = e.dataTransfer.items;
+    if(items && items[0] && items[0].webkitGetAsEntry){
+      var entries = Array.prototype.map.call(items,function(it){ return it.webkitGetAsEntry(); });
+      for(var en of entries) if(en) await walk(en,out);
+    } else out = Array.prototype.slice.call(e.dataTransfer.files);
+    return out;
+  }
+  function dz(el, cb){
+    el.addEventListener('dragover',function(e){ e.preventDefault(); el.classList.add('over'); });
+    el.addEventListener('dragleave',function(){ el.classList.remove('over'); });
+    el.addEventListener('drop',async function(e){ e.preventDefault(); el.classList.remove('over'); cb(await dropped(e)); });
+  }
+  dz($('dropX'), function(fs){ setX(fs); var imgs = fs.filter(function(f){ return !/\.xlsx$/i.test(f.name); }); if(imgs.length) addI(imgs); });
+  dz($('dropI'), function(fs){ addI(fs); if(!xlsx) setX(fs); });
+  $('inX').onchange = function(){ setX(this.files); };
+  $('inD').onchange = function(){ addI(this.files); };
+  $('inI').onchange = function(){ addI(this.files); };
+
+  $('go').onclick = async function(){
+    var btn = this; btn.disabled = true; $('bar').style.display='block'; $('msg').innerHTML='';
+    try{
+      var r = await Converter.run(xlsx, images, function(t,p){ $('msg').textContent = t; $('barI').style.width = Math.round(p*100)+'%'; });
+      var h = '';
+      if(!r.ok){
+        h = '<div class="err"><b>오류 '+r.errors.length+'건을 고친 뒤 다시 실행하십시오.</b><ul>'+r.errors.map(function(e){return '<li>'+esc(e)+'</li>';}).join('')+'</ul></div>';
+      } else {
+        var url = URL.createObjectURL(r.zip);
+        h = '<div class="done"><b>완료되었습니다.</b> 전투 '+r.stats.battles+'개, 사진 '+r.stats.photos+'장'+(r.stats.hidden?' (비공개 '+r.stats.hidden+'장 제외)':'')+', 퀴즈 '+r.stats.quizzes+'문항, 용어 '+r.stats.terms+'개, 근거 '+r.stats.sources+'건, 결심 '+r.stats.decisions+'건, 개정 '+r.stats.revisions+'건<br>'
+          + '<a href="'+url+'" download="site.zip">site.zip 내려받기 ('+(r.zip.size/1048576).toFixed(1)+'MB)</a></div>';
+      }
+      if(r.warnings && r.warnings.length) h += '<div class="warn"><b>확인 필요</b><ul>'+r.warnings.map(function(e){return '<li>'+esc(e)+'</li>';}).join('')+'</ul></div>';
+      $('msg').innerHTML = h;
+    }catch(e){
+      $('msg').innerHTML = '<div class="err"><b>처리 중 문제가 생겼습니다.</b><ul><li>'+esc(e.message||e)+'</li></ul></div>';
+    }
+    $('bar').style.display='none'; btn.disabled = false;
+  };
+})();
+</script>
+</body>
+</html>

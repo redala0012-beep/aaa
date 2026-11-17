@@ -1,0 +1,8 @@
+과제명: LLM 기반 코딩 에이전트를 활용한 일상·업무 자동화 도구 구현
+프로젝트명: 해병대 전사(戰史) 디지털 연표
+GitHub 저장소 (Public): https://github.com/redala0012-beep/aaa
+
+- README.md: 저장소 루트
+- 발표 자료: docs/발표자료.pptx
+- 샘플 입력 데이터: 전사자료/전사자료.xlsx, 전사자료/images/
+- 의존성 목록: requirements.txt
