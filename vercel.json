@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/explain.js": { "includeFiles": "site/data.js", "maxDuration": 30 }
+  },
+  "redirects": [
+    { "source": "/", "destination": "/site/index.html", "permanent": false }
+  ]
+}

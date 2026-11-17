@@ -346,6 +346,16 @@ footer .in{max-width:1100px;margin:0 auto;padding:16px}
 .slide .hint:empty{display:none}
 .edu .bar button{background:#f1efe9;color:var(--ink)}
 .edu .prog{background:var(--red)}
+/* AI 쉬운 설명 (온라인 배포판에서만 표시) */
+.aibox{border:1px solid #d9dde3;background:#f7f8fa;border-radius:12px;padding:12px 16px;margin:16px 0 0}
+.aibox .aih{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.aibox .aih b{font-size:.92rem;color:#3a4250}
+.aibox button.aigo{border:1px solid #b9c0ca;background:#fff;border-radius:8px;padding:6px 14px;font-size:.92rem;cursor:pointer}
+.aibox button.aigo:disabled{opacity:.6;cursor:wait}
+.aibox ul{margin:10px 0 4px;padding-left:1.2em}
+.aibox li{margin:3px 0}
+.aibox .ainote{font-size:.78rem;color:#6b7280}
+.aibox .aierr{color:#9a3412;font-size:.9rem;margin-top:8px}
 </style>
 </head>
 <body>
@@ -642,6 +652,33 @@ footer .in{max-width:1100px;margin:0 auto;padding:16px}
   }
   document.getElementById('qzPill').onclick = showProgress;
 
+  /* AI 쉬운 설명: 서버 함수(/api/explain)가 있는 온라인 배포판에서만 동작.
+     더블클릭(file://)으로 연 오프라인판에서는 버튼 자체를 만들지 않음. 키는 서버에만 있음. */
+  var AI_ON = /^https?:$/.test(location.protocol);
+  var AI_URL = location.pathname.indexOf('/site/') >= 0 ? location.pathname.slice(0, location.pathname.indexOf('/site/')) + '/api/explain' : '/api/explain';
+  function bindAi(b){
+    var btn = document.getElementById('aiGo'), out = document.getElementById('aiOut'), myAud = aud;
+    btn.onclick = function(){
+      btn.disabled = true; btn.textContent = '설명을 만드는 중…'; out.innerHTML = '';
+      fetch(AI_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:b.id, aud:myAud})})
+        .then(function(r){ return r.json().catch(function(){ return {error:'AI 기능을 사용할 수 없는 환경입니다.'}; }).then(function(j){ j._st = r.status; return j; }); })
+        .then(function(j){
+          if(myAud!==aud || !document.getElementById('aiOut')) return;
+          if(j.lines && j.lines.length){
+            out.innerHTML = '<ul>'+j.lines.map(function(l){ return '<li>'+esc(l)+'</li>'; }).join('')+'</ul>'
+              + '<div class="ainote">AI(Google Gemini)가 이 페이지의 본문만 바탕으로 만든 요약입니다. 공식 서술은 아래 본문과 근거를 기준으로 합니다.</div>';
+            btn.style.display = 'none';
+          } else {
+            out.innerHTML = '<div class="aierr">'+esc(j.error || 'AI 응답을 받지 못했습니다.')+'</div>';
+            btn.textContent = '다시 시도';
+            if(j._st===404 || j._st===405) document.getElementById('aibox').style.display = 'none';
+          }
+        })
+        ['catch'](function(){ out.innerHTML = '<div class="aierr">인터넷 연결을 확인해 주세요.</div>'; btn.textContent = '다시 시도'; })
+        .then(function(){ btn.disabled = false; });
+    };
+  }
+
   /* 상세 */
   function renderBattle(id){
     var i = -1; B.forEach(function(b,k){ if(b.id===id) i=k; });
@@ -662,6 +699,8 @@ footer .in{max-width:1100px;margin:0 auto;padding:16px}
       + '<dl class="meta"><dt>기간</dt><dd>'+esc(period(b))+'</dd><dt>장소</dt><dd>'+esc(b.place)+'</dd><dt>참전 부대</dt><dd>'+esc(b.units)+'</dd></dl>'
       + '<button class="btn-edu" id="goEdu">▶ 교육 모드로 보기</button></div></div>';
     if(introOf(b)) h += '<div class="story"><div class="who-l">'+A.icon+' '+esc(A.story)+'</div>'+paras(introOf(b),true)+'</div>';
+    if(AI_ON) h += '<div class="aibox" id="aibox"><div class="aih"><b>'+esc(A.label)+' 눈높이로 3줄 설명</b>'
+      + '<button class="aigo" id="aiGo">AI로 쉽게 풀어보기</button></div><div id="aiOut"></div></div>';
     if(b.summary) h += '<section class="blk"><h2>개요'+srcMarks(b,0)+'</h2>'+paras(b.summary,true)+'</section>';
     if(b.steps.length){
       h += '<section class="blk"><h2>전투 경과</h2><ol class="steps">';
@@ -702,6 +741,7 @@ footer .in{max-width:1100px;margin:0 auto;padding:16px}
       + '</nav>';
     app.innerHTML = h;
     document.getElementById('goEdu').onclick = function(){ openEdu(b); };
+    if(AI_ON) bindAi(b);
     Array.prototype.forEach.call(app.querySelectorAll('.gallery button'),function(el){
       el.onclick = function(){ openLb(b.photos[+el.getAttribute('data-k')]); };
     });
