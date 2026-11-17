@@ -47,7 +47,8 @@ module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   if (req.method !== 'POST') { res.statusCode = 405; return res.end(JSON.stringify({ error: 'POST만 허용됩니다.' })); }
-  const key = process.env.GEMINI_API_KEY;
+  // 메모장·PowerShell을 거치며 붙을 수 있는 BOM(U+FEFF)과 공백을 제거
+  const key = String(process.env.GEMINI_API_KEY || '').replace(/^﻿/, '').trim();
   if (!key) { res.statusCode = 503; return res.end(JSON.stringify({ error: 'AI 설정이 아직 되지 않았습니다.' })); }
 
   let body = req.body;
@@ -85,7 +86,7 @@ module.exports = async function handler(req, res) {
     cache.set(ck, lines);
     return res.end(JSON.stringify({ lines }));
   } catch (e) {
-    console.error('Gemini call failed', e && e.name);
+    console.error('Gemini call failed', e && e.name, e && e.message, e && e.cause && (e.cause.code || e.cause.message));
     res.statusCode = 504;
     return res.end(JSON.stringify({ error: 'AI 응답이 늦어 중단했습니다. 다시 눌러 주세요.' }));
   }

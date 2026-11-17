@@ -1,4 +1,7 @@
 {
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
   "functions": {
     "api/explain.js": { "includeFiles": "site/data.js", "maxDuration": 30 }
   },

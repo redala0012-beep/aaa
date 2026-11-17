@@ -1,0 +1,14 @@
+# Vercel에 올릴 필요 없는 것 (비밀 값은 반드시 제외)
+.env
+.env*
+*.env
+.vercel
+.git
+docs
+tests
+tools
+*.zip
+~$*.xlsx
+Thumbs.db
+Desktop.ini
+제출용_*.txt
