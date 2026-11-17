@@ -12,5 +12,14 @@
 #   - Windows PowerShell 5.1 이상 (Windows 기본 내장)
 #   - .NET Framework 4.x의 System.Drawing, System.IO.Compression (Windows 기본 내장)
 #
+# [선택: AI 쉬운 설명 (온라인판, v0.4)]
+#   - api/explain.js : Node.js 18 이상 (내장 fetch 사용, npm 패키지 없음)
+#   - 외부 서비스: Google Gemini API (환경변수 GEMINI_API_KEY, .env.local 또는 Vercel 환경변수)
+#   - 로컬 시험: node tools/dev-server.js
+#   - 배포: Vercel (vercel.json)
+#
+# [발표자료 생성: tools/make_slides.ps1]
+#   - Microsoft PowerPoint (COM 자동화)
+#
 # [사용하지 않은 라이브러리]
 #   - SheetJS(xlsx), JSZip 등은 쓰지 않았습니다. ZIP/XLSX 읽기와 ZIP 쓰기는 converter/converter.js에 직접 구현했습니다.
