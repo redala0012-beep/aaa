@@ -3,8 +3,9 @@
 > 엑셀 한 장과 사진 폴더만 있으면, 6·25전쟁부터 연평도 포격전까지 해병대 전투사를 **연표 + 교육용 슬라이드** 웹사이트로 자동 변환해 주는 도구입니다.
 > 설치도, 서버도, 인터넷 연결도 필요 없습니다.
 
-![연표 화면](docs/screenshots/01_timeline.png)
-<!-- TODO: 스크린샷 캡처 후 경로 확인 -->
+![연표 화면](docs/screenshots/02_timeline.png)
+
+> 📊 **발표 자료**: [docs/발표자료.pptx](docs/발표자료.pptx) · [PDF](docs/발표자료.pdf) (10장)
 
 ---
 
@@ -58,11 +59,23 @@
 - 이모지(🪖🎖️🏅🎉⚔️🎗️)는 **단색 선 아이콘이나 글자**로 바꾸고, 카드가 튀어 오르는 효과와 정답 애니메이션은 줄이거나 없앴습니다.
 - 색상은 `src/site-template.html` 스타일 맨 끝의 "차분한 화면" 블록 한곳에 모아 두어, 나중에 바꾸기 쉽습니다.
 
-| 연표 | 전투 상세 | 교육 모드 | 변환기 |
-|---|---|---|---|
-| ![](docs/screenshots/01_timeline.png) | ![](docs/screenshots/02_detail.png) | ![](docs/screenshots/03_edu.png) | ![](docs/screenshots/04_converter.png) |
+### 실행 화면
 
-<!-- TODO: 스크린샷 4장 캡처 -->
+| 첫 화면: 대상자 선택 | 전투 상세 (간부 모드) |
+|---|---|
+| ![대상자 선택](docs/screenshots/01_who.png) | ![전투 상세](docs/screenshots/03_detail.png) |
+| **결심 카드와 퀴즈** | **근거와 신뢰 수준** |
+| ![결심과 퀴즈](docs/screenshots/03b_decision_quiz.png) | ![근거](docs/screenshots/03c_sources.png) |
+| **교육 모드: 표지** | **교육 모드: 결심 공개** |
+| ![교육 모드 표지](docs/screenshots/04_edu_cover.png) | ![교육 모드 결심](docs/screenshots/05_edu_decision.png) |
+| **교육 모드: 퀴즈 정답 공개** | **추모 톤 (연평도 포격전)** |
+| ![교육 모드 퀴즈](docs/screenshots/06_edu_quiz.png) | ![추모 화면](docs/screenshots/07_memorial.png) |
+| **전체 개정 이력** | **변환기 입력 검사** |
+| ![개정 이력](docs/screenshots/08_log.png) | ![변환기 오류](docs/screenshots/10_converter_errors.jpg) |
+
+**주소 옵션** (대상자별 QR코드, 강의 바로가기에 사용)
+- `index.html?aud=soldier` / `officer` / `public`: 대상자 선택을 건너뛰고 해당 모드로 바로 엽니다.
+- `index.html?aud=officer&edu=6#/b/DSS`: 도솔산 전투의 교육 모드 6번째 슬라이드로 바로 엽니다. `&reveal=1`을 붙이면 정답이나 결심을 공개한 상태로 엽니다.
 
 ---
 
@@ -100,8 +113,10 @@ flowchart LR
 ├─ requirements.txt           ← 의존성 목록 (외부 패키지 없음)
 ├─ docs/
 │  ├─ PRD_해병대_전사_디지털_연표.md   ← 기획 문서
-│  ├─ 발표자료.pptx (또는 .pdf)        ← 발표 자료
-│  └─ screenshots/                     ← 실행 결과 화면
+│  ├─ 발표자료.pptx / 발표자료.pdf     ← 발표 자료 (10장)
+│  ├─ 발표자료_초안.md                 ← 발표 자료 구성안
+│  ├─ 시험운용_결과.md                 ← 실제 사용 시나리오 시험 결과
+│  └─ screenshots/                     ← 실행 결과 화면 (11장)
 ├─ converter/                 ← 변환기 (연구관용)
 │  ├─ converter.html          ← 브라우저로 열어 사용
 │  ├─ converter.js            ← XLSX 읽기·검사·사진 처리·ZIP 생성
@@ -123,7 +138,9 @@ flowchart LR
 │  └─ 정상_퀴즈용어시트없음.xlsx ← 이전 형식 호환 확인
 └─ tools/
    ├─ build.ps1               ← 템플릿 번들링·샘플 엑셀 생성
-   └─ content.json            ← 샘플 엑셀의 원본 데이터
+   ├─ content.json            ← 샘플 엑셀의 원본 데이터
+   ├─ screenshots.ps1         ← 실행 화면 캡처 (Edge headless)
+   └─ make_slides.ps1         ← 발표 자료 생성 (PowerPoint 자동화 → pptx·pdf)
 ```
 
 ---
@@ -194,6 +211,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/build.ps1 -Template
 샘플 엑셀을 `tools/content.json`에서 다시 만들려면 다음 명령을 실행합니다.
 ```bash
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/build.ps1 -Workbooks
+```
+실행 화면 캡처와 발표 자료도 스크립트로 다시 만들 수 있습니다. 캡처는 저장소를 `http://localhost:8765`로 띄운 상태에서 실행하고, 발표 자료에는 Microsoft PowerPoint가 필요합니다.
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/screenshots.ps1
+```
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/make_slides.ps1
 ```
 
 ---
@@ -395,4 +419,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/build.ps1 -Workbooks
 
 ## 10. 관련 문서
 - 기획 문서: [docs/PRD_해병대_전사_디지털_연표.md](docs/PRD_해병대_전사_디지털_연표.md)
-- 발표 자료: [docs/발표자료.pptx](docs/발표자료.pptx) <!-- TODO: 형식 확정 후 경로 수정 -->
+- 발표 자료: [docs/발표자료.pptx](docs/발표자료.pptx) · [docs/발표자료.pdf](docs/발표자료.pdf)
+- 시험 운용 결과: [docs/시험운용_결과.md](docs/시험운용_결과.md)

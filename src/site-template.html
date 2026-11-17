@@ -404,6 +404,10 @@ footer .in{max-width:1100px;margin:0 auto;padding:16px}
   function load(k,d){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
   function save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
   var aud = load('rokmc_aud', null); if(!AUDS[aud]) aud = null;
+  /* 주소 옵션: ?aud=soldier|officer|public → 대상자 바로 지정 (대상자별 QR코드·바로가기용)
+                ?edu=n (+ &reveal=1)        → 전투 화면에서 교육 모드 n번째 슬라이드로 바로 열기 */
+  var QS = {}; location.search.replace(/^\?/,'').split('&').forEach(function(kv){ var p = kv.split('='); if(p[0]) QS[decodeURIComponent(p[0])] = decodeURIComponent(p[1]||''); });
+  if(AUDS[QS.aud]){ aud = QS.aud; save('rokmc_aud', aud); }
   var answers = load('rokmc_quiz', {});
   var badgeShown = load('rokmc_badge', {});
 
@@ -839,6 +843,13 @@ footer .in{max-width:1100px;margin:0 auto;padding:16px}
   }
   window.addEventListener('hashchange',route);
   route();
+  (function(){
+    var n = parseInt(QS.edu, 10), m = location.hash.match(/^#\/b\/(.+)$/);
+    if(!n || !m || !aud) return;
+    var b = B.filter(function(x){ return x.id===decodeURIComponent(m[1]); })[0]; if(!b) return;
+    openEdu(b); cur = Math.max(0, Math.min(slides.length-1, n-1)); show();
+    if(QS.reveal) reveal();
+  })();
 })();
 </script>
 </body>
